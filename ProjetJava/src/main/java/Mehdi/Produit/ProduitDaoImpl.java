@@ -1,29 +1,55 @@
 package Mehdi.Produit;
 
-import java.sql.*;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProduitDataAccess {    //cette classe contient toutes le methodes necessaires pour interagir avec la BD sql
-
-    //1 connexion à la BD
-    String db = "supermarche_db";
-    String user = "root";
-    String pwd = "";
-    String url = "jdbc:mysql://localhost:3306/"+db;
-    Connection connection = null;
-    public ProduitDataAccess() {
+public class ProduitDaoImpl extends AbstractDao implements IProduitDao{
+    @Override
+    public void add(Produit obj) {
+        PreparedStatement pst = null;
+        String sql = "INSERT INTO produit (designation, quantite, prix, date) VALUES (?, ?, ?, ?)";
         try {
-            connection = DriverManager.getConnection(url, user, pwd);
-            System.out.println("Connexion réussie!");
-
+            pst = connection.prepareStatement(sql);
+            pst.setString(1, obj.getDesignation());
+            pst.setInt(2, obj.getQte());
+            pst.setDouble(3, obj.getPrix());
+            pst.setDate(4, Date.valueOf(obj.getDate())); // Assuming obj.getDate() returns a LocalDate
+            pst.executeUpdate();
+            System.out.println("Produit ajouté!");
         } catch (SQLException e) {
-            // Handle the exception
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
-    //once connection is established, use PreparedStatement
-    public List<Produit> getAll(){
+
+    @Override
+    public void delete(int id) {
+        PreparedStatement pst = null;
+        String sql = "DELETE FROM produit WHERE id = ?";
+        try {
+            pst = connection.prepareStatement(sql);
+            pst.setInt(1, id);
+            int rowsDeleted = pst.executeUpdate();
+            if (rowsDeleted > 0) {
+                System.out.println("Product deleted successfully!");
+            } else {
+                System.out.println("Product with ID " + id + " not found.");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
+    public Produit getById(int id) {
+        return null;
+    }
+
+    @Override
+    public List<Produit> getAll() {
         List<Produit> listeProduits = new ArrayList<Produit>();
         PreparedStatement pst = null;
         ResultSet rs;
@@ -49,7 +75,8 @@ public class ProduitDataAccess {    //cette classe contient toutes le methodes n
         return listeProduits;
     }
 
-    public List<Produit> getProduitsByKeyword(String keyword){
+    @Override
+    public List<Produit> getProduitByKeyword(String keyword) {
         List<Produit> listeProduits = new ArrayList<Produit>();
         PreparedStatement pst = null;
         ResultSet rs;
@@ -76,6 +103,4 @@ public class ProduitDataAccess {    //cette classe contient toutes le methodes n
         return listeProduits;
     }
 
-
 }
-
